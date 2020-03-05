@@ -1,6 +1,6 @@
 var io = require('socket.io')(process.env.PORT || 3000);
 var shortid = require("shortid");
-//mongodb+srv://djenetopulos:the squeezing bewilderment@dnj-cluster-oe9ho.gcp.mongodb.net/test?retryWrites=true&w=majority
+//mongodb+srv://djenetopulos:the%20squeezing%20bewilderment@dnj-cluster-oe9ho.gcp.mongodb.net/test?retryWrites=true&w=majority
 console.log('Server has arrived');
 var players = [];
 
