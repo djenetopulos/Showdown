@@ -40,7 +40,8 @@ io.on('connection', function(socket){
         console.log('player shot time is: ', data.shotTime)
         socket.broadcast.emit('shotTime', data);
     });
-
+    //  poop
+    
     socket.on('disconnect',function(){
         console.log("player disconnected");
         players.splice(players.lastIndexOf(thisClientId), 1);
