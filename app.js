@@ -25,19 +25,20 @@ io.on('connection', function(socket){
     });
 
     socket.on('yolo', function(data){
-        console.log('You only yolo yolo');
+        console.log('yolo\'d');
         console.log(data);
     });
 
-    socket.on('updatePosition', function(data){
+    socket.on('firedAt', function(data){
         data.id = thisClientId;
-        socket.broadcast.emit('updatePosition', data);
+        console.log('player shot was: ', playerId)
+        socket.broadcast.emit('died', data);
     });
 
-    socket.on('move', function(data){
+    socket.on('shotTime', function(data){
         data.id = thisClientId;
-        console.log("player is moving", JSON.stringify(data));
-        socket.broadcast.emit('move', data);
+        console.log('player shot time is: ', data.shotTime)
+        socket.broadcast.emit('shotTime', data);
     });
 
     socket.on('disconnect',function(){
