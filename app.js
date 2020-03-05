@@ -1,6 +1,6 @@
 var io = require('socket.io')(process.env.PORT || 3000);
 var shortid = require("shortid");
-
+//mongodb+srv://djenetopulos:the squeezing bewilderment@dnj-cluster-oe9ho.gcp.mongodb.net/test?retryWrites=true&w=majority
 console.log('Server has arrived');
 var players = [];
 
@@ -41,7 +41,7 @@ io.on('connection', function(socket){
         socket.broadcast.emit('shotTime', data);
     });
     //  poop
-    
+
     socket.on('disconnect',function(){
         console.log("player disconnected");
         players.splice(players.lastIndexOf(thisClientId), 1);
