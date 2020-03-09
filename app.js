@@ -4,8 +4,8 @@ var express = require("express");
 //mongodb+srv://djenetopulos:the%20squeezing%20bewilderment@dnj-cluster-oe9ho.gcp.mongodb.net/test?retryWrites=true&w=majority
 console.log('Server has arrived');
 var players = [];
-int playerCount = 0;
-Timeout timeToFire;
+var playerCount = 0;
+var timeToFire;
 io.on('connection', function(socket){
     console.log('client connected');
     playerCount++;
@@ -56,8 +56,9 @@ io.on('connection', function(socket){
     //  if more players connect before the time is up, restart the timer
     if(playerCount >= 2)
     {
+        console.log("two players present.  prepare to duel.")
         clearTimeout(timeToFire);
         var waitTimer = 3000 + (Math.random() * 4000);
-        timeToFire = setTimeout(socket.broadcast.emit('draw'), waitTimer);
+        timeToFire = setTimeout(function(){socket.broadcast.emit('draw');}, waitTimer);
     }
 });
