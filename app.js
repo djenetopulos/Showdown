@@ -23,6 +23,7 @@ mongoose.connect("mongodb+srv://HapShapIncorporated:nitsujSHAPPY2298%40%40%28%2A
 console.log('Server has arrived');
 var players = [];
 var reactions = [];
+var userNames = [];
 var playerCount = 0;
 var timeToFire;
 io.on('connection', function(socket){
@@ -31,8 +32,9 @@ io.on('connection', function(socket){
     var thisClientId = shortid.generate();
     players.push(thisClientId);
     reactions.push(-9999);
+    userNames.push("ERROR");
 
-    socket.broadcast.emit('nameSelf', {id:thisClientId});
+    socket.emit('nameSelf', {id:thisClientId});
 
     //  spawn all newly joined players
     //socket.broadcast.emit('spawn', {id:thisClientId});
@@ -43,13 +45,18 @@ io.on('connection', function(socket){
         console.log('player ready');
         playerCount++;
 
-        
+        socket.broadcast.emit('spawn', {id:thisClientId,playerName:data.playerName})
+        userNames[players.lastIndexOf(data.id)] = data.playerName;
+        console.log(data.playerName);
+
         players.forEach(function(playerId){
             if(playerId == thisClientId){
                 return;
             }
-            socket.broadcast.emit('spawn', {id:playerId});
-            console.log('spawning player of I=id: ', playerId);
+            if(userNames[players.lastIndexOf(playerId)] != "ERROR") {
+                socket.emit('spawn', {id:playerId,playerName:userNames[players.lastIndexOf(playerId)]});
+                console.log('spawning player of I=id: ', playerId);
+            }
         });
 
 
@@ -61,7 +68,8 @@ io.on('connection', function(socket){
             clearTimeout(timeToFire);
             var waitTimer = 3000 + (Math.random() * 4000);
             console.log("Draw in " + waitTimer + " ms.")
-            timeToFire = setTimeout(function(){socket.emit('draw');}, waitTimer);
+            timeToFire = setTimeout(function(){socket.broadcast.emit('draw');socket.emit('draw');}, waitTimer);
+
         }
     });
     
