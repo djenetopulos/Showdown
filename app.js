@@ -4,7 +4,7 @@ var express = require("express");
 var mongoose = require('mongoose');
 
 //load model (Schema)
-require('../Showdown (One) Server/records');
+require('../Showdown Server/records');
 var Time = mongoose.model('records');
 
 //mongodb+srv://djenetopulos:the%20squeezing%20bewilderment@dnj-cluster-oe9ho.gcp.mongodb.net/test?retryWrites=true&w=majority
@@ -31,23 +31,27 @@ io.on('connection', function(socket){
     var thisClientId = shortid.generate();
     players.push(thisClientId);
     reactions.push(-9999);
+
+    socket.broadcast.emit('nameSelf', {id:thisClientId});
+
     //  spawn all newly joined players
-    socket.broadcast.emit('spawn', {id:thisClientId});
+    //socket.broadcast.emit('spawn', {id:thisClientId});
 
-    //  request logged in player's position
-    //  socket.broadcast.emit('requestPosition');
-
-    players.forEach(function(playerId){
-        if(playerId == thisClientId){
-            return;
-        }
-        socket.broadcast.emit('spawn', {id:playerId});
-        console.log('spawning player of I=id: ', playerId);
-    });
+    
 
     socket.on('ready', function(data){
         console.log('player ready');
         playerCount++;
+
+        
+        players.forEach(function(playerId){
+            if(playerId == thisClientId){
+                return;
+            }
+            socket.broadcast.emit('spawn', {id:playerId});
+            console.log('spawning player of I=id: ', playerId);
+        });
+
 
         //  start shooting between 3 and 7 seconds after more than one player is present
         //  if more players connect before the time is up, restart the timer
@@ -57,20 +61,20 @@ io.on('connection', function(socket){
             clearTimeout(timeToFire);
             var waitTimer = 3000 + (Math.random() * 4000);
             console.log("Draw in " + waitTimer + " ms.")
-            timeToFire = setTimeout(function(){socket.broadcast.emit('draw');}, waitTimer);
+            timeToFire = setTimeout(function(){socket.emit('draw');}, waitTimer);
         }
     });
-
-    socket.on('firedAt', function(data){
+    
+    socket.on('firedAt', function(){
         data.id = thisClientId;
         console.log('player shot was: ', playerId)
         socket.broadcast.emit('died', data);
     });
 
     socket.on('shotTime', function(data){
-        Console.log("made it here");
+        console.log("made it here: " + data.id);
         data.id = thisClientId;
-        console.log('player ' + data["id"] + ' shot time is: ', data.shotTime)
+        console.log('player ' + data.id + ' shot time is: ', data.shotTime)
         reactions[players.lastIndexOf(data.id)] = data.shotTime;
         
         //record the player's time in the database
@@ -102,13 +106,11 @@ io.on('connection', function(socket){
 
         var roundComplete = true;
         var fastestPlayer = 0;
-        foreach(r in reactions)
-        {
+        reactions.forEach(function(r){
             if(r < 0)
             {
                 roundComplete = false;
                 console.log("tested reactions but one reaction is negative (" + r + ") so we are not ready to proceed");
-                break;
             }
             else
             {
@@ -118,20 +120,20 @@ io.on('connection', function(socket){
                     fastestPlayer = reactions.lastIndexOf(r);
                 }
             }
-        }
+        })
         //if(roundComplete && fastestPlayer)
         //socket.broadcast.emit('win', )
         //socket.broadcast.emit('shotTime', data);
 
     });
 
-    socket.on('disconnect',function(){
-        console.log("player disconnected");
+    /*socket.on('disconnect',function(){
+        console.log("player: " + {thisClientId} + " disconnected");
         reactions.splice(players.lastIndexOf(thisClientId),1);
         players.splice(players.lastIndexOf(thisClientId), 1);
         playerCount--;
         if(playerCount <= 1)
             clearTimeout(timeToFire);
         //socket.broadcast.emit('disconnected', {id:thisClientId});
-    });
+    });*/
 });
