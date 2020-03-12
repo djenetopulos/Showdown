@@ -23,7 +23,6 @@ mongoose.connect("mongodb+srv://HapShapIncorporated:nitsujSHAPPY2298%40%40%28%2A
 console.log('Server has arrived');
 var players = [];
 var reactions = [];
-var userNames = [];
 var playerCount = 0;
 var timeToFire;
 io.on('connection', function(socket){
@@ -32,45 +31,35 @@ io.on('connection', function(socket){
     var thisClientId = shortid.generate();
     players.push(thisClientId);
     reactions.push(-9999);
-    userNames.push("ERROR");
 
     socket.emit('nameSelf', {id:thisClientId});
 
     //  spawn all newly joined players
     //socket.broadcast.emit('spawn', {id:thisClientId});
 
-    
-
-    socket.on('ready', function(data){
-        console.log('player ready');
-        playerCount++;
-
-        socket.broadcast.emit('spawn', {id:thisClientId,playerName:data.playerName})
-        userNames[players.lastIndexOf(data.id)] = data.playerName;
-        console.log(data.playerName);
-
-        players.forEach(function(playerId){
-            if(playerId == thisClientId){
-                return;
-            }
-            if(userNames[players.lastIndexOf(playerId)] != "ERROR") {
-                socket.emit('spawn', {id:playerId,playerName:userNames[players.lastIndexOf(playerId)]});
-                console.log('spawning player of I=id: ', playerId);
-            }
-        });
-
+    socket.on('spawnExisting', function(data){
+        socket.broadcast.emit('spawn', {id:data.id,playerName:data.playerName});
 
         //  start shooting between 3 and 7 seconds after more than one player is present
         //  if more players connect before the time is up, restart the timer
         if(playerCount >= 2)
         {
-            console.log("two players present.  prepare to duel.")
             clearTimeout(timeToFire);
             var waitTimer = 3000 + (Math.random() * 4000);
             console.log("Draw in " + waitTimer + " ms.")
             timeToFire = setTimeout(function(){socket.broadcast.emit('draw');socket.emit('draw');}, waitTimer);
 
         }
+    });
+
+    socket.on('ready', function(data){
+        console.log(thisClientId + ': ready');
+        
+        playerCount++;
+
+        socket.broadcast.emit('spawn', {id:thisClientId,playerName:data.playerName})
+        
+        socket.broadcast.emit('requestSpawn');
     });
     
     socket.on('firedAt', function(){
@@ -80,60 +69,78 @@ io.on('connection', function(socket){
     });
 
     socket.on('shotTime', function(data){
-        console.log("made it here: " + data.id);
+        //console.log(thisClientId + " : " + data.id);
         data.id = thisClientId;
-        console.log('player ' + data.id + ' shot time is: ', data.shotTime)
+        console.log('player ' + data.id + ', ' + data.playerName + ' shot time is: ', data.shotTime)
         reactions[players.lastIndexOf(data.id)] = data.shotTime;
         
+        //console.log(thisClientId + ': ' + reactions);
+               
+        console.log(reactions);
+        if(reactions.every(function(reaction){
+            return reaction > 0;
+        })) {
+            console.log("looking for the winner");
+            var fastestShotIndex = (reactions[0] > reactions[1]) ? 1 : 0;
+            socket.emit('findWinner', {id:players[fastestShotIndex],shotTime:reactions[fastestShotIndex]});
+            socket.broadcast.emit('findWinner', {id:players[fastestShotIndex],shotTime:reactions[fastestShotIndex]});
+        }
+        else
+        {
+            console.log('at least one time not in, no winner found');
+        }
+
+    });
+
+    socket.on('winner', function(data) {
+        console.log('winner found');
+
         //record the player's time in the database
         var newTime = {
-            id:data.id,
-            user:data.username,
+            id:thisClientId,
+            user:data.playerName,
             time:data.shotTime
-        }        
+        }
+        console.log(newTime);
         new Time(newTime).save().then(function(){
             //Database stuff
             var TopRecords = []
-            TopRecords.fill({
-              id:"a",
-               user:"Dev",
-              time:2000
-            });
+            for(let i = 0; i < 10; i++){
+                TopRecords.push({
+                    id:"aaaaaaaa",
+                    user:"Dev",
+                    time:4000
+                });
+            }
+
+            /* console.log(TopRecords);
+            console.log('\n');
 
             //Take in all the records
             Time.find().then(function(records){
                 records.forEach(record => {
-                    TopRecords.push(record);
+                    TopRecords.push({
+                        id:record.id,
+                        user:record.user,
+                        time:record.time
+                    });
                 })
             })
 
+            console.log(TopRecords);
+            console.log('\n');
+
             TopRecords.sort((a, b) => a.time < b.time)
+            console.log(TopRecords);*/
 
-            socket.broadcast.emit('DisplayHighScores', TopRecords.slice(0, 9));
+            /*TopRecords.forEach(function(record){
+
+            });*/
+            console.log({"AllRecords":TopRecords});
+            socket.emit('displayHighScores', {"AllRecords":TopRecords});
+            socket.broadcast.emit('displayHighScores', {"AllRecords":TopRecords});
         });
-
-        var roundComplete = true;
-        var fastestPlayer = 0;
-        reactions.forEach(function(r){
-            if(r < 0)
-            {
-                roundComplete = false;
-                console.log("tested reactions but one reaction is negative (" + r + ") so we are not ready to proceed");
-            }
-            else
-            {
-                console.log(r + " seems fine to me");
-                if(r < reactions[fastestPlayer])
-                {
-                    fastestPlayer = reactions.lastIndexOf(r);
-                }
-            }
-        })
-        //if(roundComplete && fastestPlayer)
-        //socket.broadcast.emit('win', )
-        //socket.broadcast.emit('shotTime', data);
-
-    });
+    })
 
     /*socket.on('disconnect',function(){
         console.log("player: " + {thisClientId} + " disconnected");
