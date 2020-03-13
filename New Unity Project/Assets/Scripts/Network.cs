@@ -45,10 +45,10 @@ public class Network : MonoBehaviour
     {
         Player local = localPlayer.GetComponent<Player>();
         //Debug.Log(e.data["id"].ToString() + " : " + local.id);
-        if(e.data["id"].ToString() == local.id)
+        if(e.data["id"].ToString().Trim('"') == local.id)
         {
             JSONObject data = new JSONObject();
-            //data.AddField("id", local.id);
+            data.AddField("id", local.id);
             data.AddField("playerName", local.playerName);
             data.AddField("shotTime", e.data["shotTime"]);
             socket.Emit("winner", data);
@@ -65,14 +65,15 @@ public class Network : MonoBehaviour
 
     void OnNameSelf(SocketIOEvent e)
     {
-        localPlayer.GetComponent<Player>().id = e.data["id"].ToString();
+        localPlayer.GetComponent<Player>().id = e.data["id"].ToString().Trim('"');
     }
 
     void OnSpawn(SocketIOEvent e)
     {
-        players.Add(e.data["id"].ToString(), GameObject.Instantiate(playerPrefab));
-        players[e.data["id"].ToString()].GetComponent<Player>().id = e.data["id"].ToString();
-        players[e.data["id"].ToString()].GetComponent<Player>().SetName(e.data["playerName"].ToString().Trim('"'));
+        players.Add(e.data["id"].ToString().Trim('"'), GameObject.Instantiate(playerPrefab));
+        players[e.data["id"].ToString().Trim('"')].GetComponent<Player>().id = e.data["id"].ToString().Trim('"');
+        players[e.data["id"].ToString().Trim('"')].GetComponent<Player>().SetName(e.data["playerName"].ToString().Trim('"'));
+
     }
 
     void OnDraw(SocketIOEvent e)
@@ -88,8 +89,13 @@ public class Network : MonoBehaviour
 
     void OnShot(SocketIOEvent e)
     {
-        Debug.Log("Oh no! you're hit!");
-        localPlayer.GetComponent<Player>().GetShot(players[e.data["id"].ToString()]);
+        Debug.Log("A hit on: " + e.data["id"].ToString().Trim('"'));
+        Debug.Log("Local player: " + localPlayer.GetComponent<Player>().id);
+        Debug.Log("Other Player: " + players[e.data["id"].ToString().Trim('"')].GetComponent<Player>().id);
+        if (e.data["id"].ToString().Trim('"') == localPlayer.GetComponent<Player>().id)
+            localPlayer.GetComponent<Player>().GetShot();
+        else
+            players[e.data["id"].ToString().Trim('"')].GetComponent<Player>().GetShot();
     }
 
     void OnWin(SocketIOEvent e)

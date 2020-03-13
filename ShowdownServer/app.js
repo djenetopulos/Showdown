@@ -93,7 +93,10 @@ io.on('connection', function(socket){
     });
 
     socket.on('winner', function(data) {
-        console.log('winner found');
+        console.log('winner found: ' + data.id + " : " + data.playerName);
+
+        socket.broadcast.emit('shot', {id:(data.id == players[1]) ? players[0] : players[1] });
+        socket.emit('shot', {id:(data.id == players[0]) ? players[0] : players[1] });
 
         //record the player's time in the database
         var newTime = {
@@ -115,6 +118,15 @@ io.on('connection', function(socket){
                         time:record.time
                     })
                 })
+
+                while(TopRecords.length < 10)
+                {
+                    TopRecords.push({
+                        id:"--------",
+                        user:"Developer",
+                        time:4000
+                    })
+                }
 
                 TopRecords.sort(function(a,b){return a.time-b.time;});
 

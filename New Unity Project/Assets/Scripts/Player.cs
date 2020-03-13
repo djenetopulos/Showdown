@@ -36,8 +36,9 @@ public class Player : MonoBehaviour
         draw = false;
         anim.SetTrigger("fire");
     }
-    public void GetShot(GameObject shooter)
+    public void GetShot()
     {
+        Debug.Log("Bullet is in the player");
         anim.SetTrigger("shot");
 
     }

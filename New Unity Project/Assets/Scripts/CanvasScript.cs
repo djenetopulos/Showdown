@@ -13,7 +13,7 @@ public class CanvasScript : MonoBehaviour
 	{
         panel.SetActive(true);
 
-        Debug.Log(e);
+        //Debug.Log(e);
         List<JSONObject> records = e.data["AllRecords"].list;
         int i = 0;
 
@@ -21,22 +21,30 @@ public class CanvasScript : MonoBehaviour
 		{
             string a = records[i]["user"].ToString().Trim('"');
             string b = "";
-            string c = records[i]["time"].ToString().Trim('"');
+            string c1 = records[i]["time"].ToString().Trim('"');
+            string[] c = c1.Split('.');
+            
 
-            while(a.Length <= 10)
+            //Debug.Log('|' + c[0] + " : " + c[1] + '|');
+
+            while(a.Length < 10)
             {
                 a = a + ".";
             }
-            while(c.Length <= 9)
+            while(c[0].Length < 4)
             {
-                c = c + " ";
+                c[0] = "." + c[0];
             }
-            while((a.Length + b.Length + c.Length) <= 41)
+            while(c[1].Length < 4)
+            {
+                c[1] = c[1] + " ";
+            }
+            while((a.Length + b.Length + c.Length) <= 33)
             {
                 b = b + ".";
             }
-
-            score.text = a + b + c;           
+            //Debug.Log('|' + c[0] + " : " + c[1] + '|');
+            score.text = a + b + c[0] + '.' + c[1];           
 
             //score.text = records[i]["user"].ToString().Trim('"') + "\t\t\t..........\t\t" + records[i]["time"]; 
             i++;

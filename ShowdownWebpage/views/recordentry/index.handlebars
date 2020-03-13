@@ -4,7 +4,7 @@
 	<p>{{user}}</p>
 	<p>{{time}}</p>
 	<a href="/records/recordentry/recordedit/{{id}}" class="btn btn-block btn-dark mb-2">Edit Record</a>
-	<form action="/recorddelete/{{id}}?_method=DELETE" method="POST">
+	<form action="/records/recorddelete/{{_id}}?_method=DELETE" method="POST">
 		<input type="hidden" name="_method" value="DELETE">
 		<input type="submit" class="btn btn-block btn-danger" value="Delete Record">
 	</form>

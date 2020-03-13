@@ -136,7 +136,7 @@ router.put('/recordedit/:id', ensureAuthenticated, function(req,res){
 
 router.delete('/recorddelete/:id', ensureAuthenticated, function(req,res){
     Record.deleteOne({
-        id:req.params.id
+        _id:req.params.id
     }).then(function(){
         req.flash('success_msg', 'Record Deleted Successfully');
         res.redirect('/records/allrecords');
