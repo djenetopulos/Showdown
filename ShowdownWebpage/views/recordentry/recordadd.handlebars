@@ -1,0 +1,23 @@
+<h1>Add Record</h1>
+{{#each errors}}
+<div class="alert alert-danger">{{text}}</div>
+{{else}}
+
+{{/each}}
+<div class="card card-body">
+    <form action="/records/recordentry" method="POST">
+        <div class="form-group">
+            <label for="id">instanced user id</label>
+            <input type="text" name="id" class='form-control' required>
+        </div>
+        <div class="form-group">
+            <label for="user">Username of player</label>
+            <input type="text" name="user" class='form-control' required>
+        </div>
+        <div class="form-group">
+            <label for="time">Fastest reaction time</label>
+            <input type="text" name="time" class='form-control' required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
