@@ -104,42 +104,24 @@ io.on('connection', function(socket){
         console.log(newTime);
         new Time(newTime).save().then(function(){
             //Database stuff
+
             var TopRecords = []
-            for(let i = 0; i < 10; i++){
-                TopRecords.push({
-                    id:"aaaaaaaa",
-                    user:"Dev",
-                    time:4000
-                });
-            }
-
-            /* console.log(TopRecords);
-            console.log('\n');
-
             //Take in all the records
             Time.find().then(function(records){
-                records.forEach(record => {
+                records.forEach(function(record, index){
                     TopRecords.push({
                         id:record.id,
                         user:record.user,
                         time:record.time
-                    });
+                    })
                 })
+
+                TopRecords.sort(function(a,b){return a.time-b.time;});
+
+                socket.emit('displayHighScores', {"AllRecords":TopRecords.slice(0, 10)});
+                socket.broadcast.emit('displayHighScores', {"AllRecords":TopRecords.slice(0, 10)});
             })
-
-            console.log(TopRecords);
-            console.log('\n');
-
-            TopRecords.sort((a, b) => a.time < b.time)
-            console.log(TopRecords);*/
-
-            /*TopRecords.forEach(function(record){
-
-            });*/
-            console.log({"AllRecords":TopRecords});
-            socket.emit('displayHighScores', {"AllRecords":TopRecords});
-            socket.broadcast.emit('displayHighScores', {"AllRecords":TopRecords});
-        });
+        })
     })
 
     /*socket.on('disconnect',function(){
