@@ -4,7 +4,7 @@ var express = require("express");
 var mongoose = require('mongoose');
 
 //load model (Schema)
-require('../Showdown Server/records');
+require('../ShowdownServer/records');
 var Time = mongoose.model('records');
 
 //mongodb+srv://djenetopulos:the%20squeezing%20bewilderment@dnj-cluster-oe9ho.gcp.mongodb.net/test?retryWrites=true&w=majority
